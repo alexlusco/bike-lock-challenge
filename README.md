@@ -15,17 +15,6 @@ the output is a ranked list of the most likely remaining combinations.
 
 ---
 
-## file structure
-
-├── bike-lock-challenge.Rproj # rstudio project file
-├── code
-│ ├── 00_config.r # setup script: loads pkgs, reads data
-│ ├── 01_build_priors.R # main model: entropy priors + filtering
-│ └── utils.R # helper functions (kernels, ranking, etc.)
-└── data
-| └── exp_df.csv # example jumble data (digits 0–9 per wheel)
-
-authorship
 developed by alex luscombe & m.p.
 
 october 2025
