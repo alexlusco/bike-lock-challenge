@@ -8,7 +8,8 @@ the core script builds probabilistic priors for each wheel of a lock based on ob
 
 from these priors, the script scores all 10,000 possible combinations and can optionally ban unlikely starting digits (e.g., 7–9).  
 
-this is built for a small game where we’re allowed up to five guesses. after each guess, we’re told how many digits were in the correct position (the number of `k` spots).  
+this is built for a small game where we’re allowed up to five guesses. after each guess, we’re told how many digits were in the correct position (the number of `k` spots). 
+
 each time we get that feedback, the model filters the candidate pool to keep only codes consistent with the result, renormalizes the probabilities, and re-ranks what’s left. multiple guesses can be chained together to iteratively shrink the search space.  
 the output is a ranked list of the most likely remaining combinations.
 
