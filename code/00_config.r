@@ -20,9 +20,9 @@ for (p in pkgs) {
 # load packages
 library(readr)
 library(dplyr)
+library(tidyr)
 
 # --- load helper code ---
-source("code/sim_data.R")
 source("code/utils.R")
 
 # --- import experiment data ---
@@ -31,4 +31,8 @@ source("code/utils.R")
 exp_data <- read_csv("data/exp_df.csv") |> 
   slice_sample(n = 20)
 
-# released_data <- placeholder  # placeholder for official release data
+# --- import real data ---
+real_data <- read_csv("data/combos_release_1_20241024.csv")
+
+# --- import pin data --- # not actually helpful - abandoned this signal
+#pin_data <- read_csv("data/4_pin_leaks.csv")
