@@ -32,7 +32,7 @@ exp_data <- read_csv("data/exp_df.csv") |>
   slice_sample(n = 20)
 
 # --- import real data ---
-real_data <- read_csv("data/combos_release_1_20241024.csv")
+real_data <- read_csv("data/combos_release_1_20241024.csv") |> mutate(week = 1)
 
 # --- import pin data --- # not actually helpful - abandoned this signal
 #pin_data <- read_csv("data/4_pin_leaks.csv")

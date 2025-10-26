@@ -23,7 +23,8 @@
 # 0) inputs and quick diagnostics
 # ============================================================
 
-jumble_data <- exp_data
+#jumble_data <- exp_data
+jumble_data <- real_data
 
 # pin leak summary (optional): helps decide banned starting digits
 # tweak:
@@ -93,12 +94,12 @@ spin_override <- spin_from_dist(dist_per_wheel, d_lo = 1.5, d_hi = 2.7)
 # - spin_* passthroughs: advanced knobs to override or bias spin estimation.
 priors <- build_priors_calibrated(
   jumbles     = jumble_data,
-  do_cv       = TRUE,          # early: true (if data allows); later: can set false for speed
+  do_cv       = TRUE,          # early: true (if data allows); later: can set false for speed; if do_cv FALSE, and want to change lamba sharp and flat need to adjust in utils.R
   group_col   = group_col,     # only used if "week" exists
   row_weights = NULL,          # set to NULL to disable time decay
   spin_target = NULL,
   spin_weight = NULL,
-  spin_groups = NULL
+  spin_groups = NULL,
 )
 
 
