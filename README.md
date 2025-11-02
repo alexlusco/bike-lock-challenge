@@ -14,7 +14,7 @@ a small, reproducible framework to guess a 4-digit combination lock code using o
 ## approach (technical)
 1. **per-wheel priors (naive bayes):** estimate p(digit at each position) from jumbles with laplace smoothing.
 2. **pairwise coupling (pmi):** learn light dependencies between positions with pointwise mutual information (pmi), especially (1,2) and (3,4).
-3. **shared-offset suffix bump (optional):** a small log-prob bonus if the suffix (digits 3 and 4) matches a simple **shared back-off** pattern seen in jumbles. 
+3. **shared-offset suffix bump (optional):** a small log-prob bonus if the suffix (e.g., digits 3 and 4) matches a simple **shared back-off** pattern seen in jumbles. 
 4. **optional leak prior:** add a soft log-probability over the full 10k code space (weighted by a mixing knob).
 5. **candidate scoring:** sum all components to get a log-score per code on the full 10k space.
 6. **feedback filtering:** enforce every past guess’s `k` (keep only codes with exactly that many positional matches).
