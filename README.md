@@ -2,7 +2,7 @@
 
 **authors:** alex luscombe & m.p.
 
-**disclaimed:** for education purposes only! this algorithm was created for a mastermind-style guessing game (5 guesses max), and *not* for the purpose of stealing bikes. don't do that.
+**disclaimer:** for education purposes only! this algorithm was created for a mastermind-style guessing game (5 guesses max), and *not* for the purpose of stealing bikes. don't do that.
 
 ## overview
 a small, reproducible framework to guess a 4-digit combination lock code using only:
