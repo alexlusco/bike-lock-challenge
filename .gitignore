@@ -58,5 +58,6 @@ rsconnect/
 
 ### old versions of code retained
 *_OLD.R
+**/code_old/
 
 # End of https://www.toptal.com/developers/gitignore/api/r
