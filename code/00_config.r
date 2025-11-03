@@ -22,7 +22,7 @@ library(tidyr)
 # note that with no seed set, samples will not be identical
 exp_data <- read_csv("data/exp_df.csv") |> 
   #filter(week %in% c(3, 4)) |> 
-  filter(jumbler == "mp")
+  filter(jumbler == "al")
   
 
 # --- import real data ---

@@ -16,13 +16,13 @@ a small, reproducible framework to guess a 4-digit combination lock code using o
 2. **pairwise coupling (pmi):** learn light dependencies between positions with pointwise mutual information (pmi), especially (1,2) and (3,4).
 3. **shared-offset suffix bump (optional):** a small log-prob bonus if the suffix (e.g., digits 3 and 4) matches a simple **shared back-off** pattern seen in jumbles. 
 4. **optional leak prior:** add a soft log-probability over the full 10k code space (weighted by a mixing knob).
-5. **candidate scoring:** sum all components to get a log-score per code on the full 10k space.
-6. **feedback filtering:** enforce every past guess’s `k` (keep only codes with exactly that many positional matches).
-7. **map vs shrink:**  
+5. **locks:** when a position’s posterior mass ≥ threshold (e.g., 0.9), treat it as “locked” and focus probes around remaining positions.
+6. **candidate scoring:** sum all components to get a log-score per code on the full 10k space.
+7. **feedback filtering:** enforce every past guess’s `k` (keep only codes with exactly that many positional matches).
+8. **map vs shrink vs isolator**  
    - **map** = top posterior code (highest current log-score).  
    - **shrink** = next probe that **maximizes expected reduction** of the remaining mass (best split on k=0..4 buckets), sampled from a focused pool.
-8. **isolator tests:** build 2 orthogonal tests that flip digits at the most uncertain positions to identify which slots are correct.
-9. **locks:** when a position’s posterior mass ≥ threshold (e.g., 0.9), treat it as “locked” and focus probes around remaining positions.
+   - **isolator** = build 2 orthogonal tests that flip digits at the most uncertain positions to identify which slots are correct.
 
 ---
 
