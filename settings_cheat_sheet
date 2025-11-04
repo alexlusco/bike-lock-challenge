@@ -1,0 +1,103 @@
+MP weeks 1-2
+
+laplace        = 1.0
+alpha_pmi      = 0.97      # strong pairwise coupling
+w12            = 1.05      # weight on block (digit_1, digit_2)
+w34            = 1.21      # weight on block (digit_3, digit_4)
+w_cross        = 0.37      # weight on cross-pairs (1,3), (1,4), (2,3), (2,4)
+socs_bonus_log = 0.68      # ≈ log(1.97) suffix bump factor
+
+leak_prior     = None      # leak OFF
+beta_leak      = 0.0
+
+use_cross_pool = True
+K_prefix       = 80
+K_suffix       = 80
+use_mass_split = True
+sample_limit   = 700
+
+respect_locks  = True
+lock_threshold = 0.88
+top_n          = 20
+
+---------------------
+
+MP weeks 3-4
+
+params <- list(
+  laplace        = 1,
+  alpha_pmi      = 0.7,
+  w12            = 1.1,
+  w34            = 1.25,
+  w_cross        = 0.20,
+  socs_bonus_log = log(1.7),
+
+  leak_prior     = NULL,  # leak OFF
+  beta_leak      = 0,
+
+  use_cross_pool = TRUE, 
+  K_prefix       = 80, 
+  K_suffix       = 80,
+
+  use_mass_split = TRUE,
+  sample_limit   = 800,
+
+  respect_locks  = TRUE, 
+  lock_threshold = 0.88,
+
+  always_offer_isolators = TRUE,
+  top_n          = 20
+)
+
+---------------------
+
+MP weeks 2 & 5
+
+laplace        = 1
+alpha_pmi      = 0.7
+w12            = 1.1
+w34            = 1.25
+w_cross        = 0.20
+socs_bonus_log = log(1.7)
+
+# leak off
+leak_prior     = NULL       # do not mix in leak prior
+beta_leak      = 0
+
+use_cross_pool = TRUE
+K_prefix       = 80
+K_suffix       = 80
+
+use_mass_split = TRUE
+sample_limit   = 800
+
+respect_locks  = TRUE
+lock_threshold = 0.88
+
+always_offer_isolators = TRUE
+top_n          = 20
+
+-------------------
+AL week 2
+
+params_al_w2 <- list(
+  laplace        = 1,
+  alpha_pmi      = 0.8068,
+  w12            = 1.0027,
+  w34            = 0.5719,
+  w_cross        = 0.3274,
+  socs_bonus_log = 0.3925,     # direct log-weight, not log(1.7) etc
+  leak_prior     = NULL,       # leak off
+  beta_leak      = 0,
+
+  use_cross_pool = TRUE, 
+  K_prefix       = 80,
+  K_suffix       = 80,
+  use_mass_split = TRUE,
+  sample_limit   = 211,
+
+  respect_locks        = TRUE,
+  lock_threshold       = 0.88,
+  always_offer_isolators = TRUE,
+  top_n                = 20
+)

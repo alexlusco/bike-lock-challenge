@@ -3,7 +3,7 @@
 source("code/utils.R")
 
 # ---------------- Load your jumbles ----------------
-df <- exp_data # or real_data
+df <- real_data # or real_data
 
 # ---------------- Optional leak prior (build once) ----------------
 # If you want leak available later, build the table now; keep beta=0 until you enable it.
@@ -13,36 +13,16 @@ leak_prior_table <- build_leak_prior(pin_data, temperature = 600)
 # ---------------- Tunable params (edit anytime) -------------------
 params <- list( # MP
   laplace        = 1,
-  alpha_pmi      = 0.7, # 0.9 for
+  alpha_pmi      = 0.7,
   w12            = 1.1,
-  w34            = 1.25,
-  w_cross        = 0.20,
-  socs_bonus_log = log(1.7),
+  w34            = 1.2,
+  w_cross        = 0.22,
+  socs_bonus_log = log(1.5),
   leak_prior     = NULL,   # set to leak_prior_table when you want it ON
   beta_leak      = 0,      # e.g., 0.15 when enabling
   use_cross_pool = TRUE, K_prefix = 80, K_suffix = 80,
   use_mass_split = TRUE,
   sample_limit   = 800,
-  respect_locks  = TRUE, lock_threshold = 0.88,
-  always_offer_isolators = TRUE,
-  top_n          = 20
-)
-
-params <- list( # AL
-  laplace        = 1,
-  alpha_pmi      = 0.6,          # strong PMI usage given coupling
-  w12            = 1.1,          # max the prefix block (1,2)
-  w34            = 1.25,          # max the suffix block (3,4)
-  w_cross        = 0.2,          # keep a meaningful cross term
-  socs_bonus_log = log(1.4),     # gentle suffix heuristic
-  # leak: keep OFF initially; turn ON from round 3 if k is lagging
-  #leak_prior     = leak_prior_table,  # build once; keep NULL if not loaded
-  leak_prior     = NULL,
-  #beta_leak      = 0.12,          # enable from Round 3+ only (set 0 for R1–R2)
-  beta_leak      = 0,
-  use_cross_pool = TRUE, K_prefix = 80, K_suffix = 80,
-  use_mass_split = TRUE,
-  sample_limit   = 900,           # you can bump to 1200 if you want a wider probe pool
   respect_locks  = TRUE, lock_threshold = 0.88,
   always_offer_isolators = TRUE,
   top_n          = 20
