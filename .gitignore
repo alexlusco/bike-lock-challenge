@@ -60,4 +60,8 @@ rsconnect/
 *_OLD.R
 **/code_old/
 
+## hide ground truth code
+code/ground_truth.R
+settings_cheat_sheet.txt
+
 # End of https://www.toptal.com/developers/gitignore/api/r

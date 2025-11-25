@@ -101,3 +101,28 @@ params_al_w2 <- list(
   always_offer_isolators = TRUE,
   top_n                = 20
 )
+
+---------------------
+
+params_al_w34 <- list(
+  laplace        = 1,
+  alpha_pmi      = 0.7000,
+  w12            = 1.0000,
+  w34            = 1.4000,
+  w_cross        = 0.2500,
+  socs_bonus_log = log(1.4),   # ≈ 0.3365
+
+  leak_prior     = NULL,
+  beta_leak      = 0,
+
+  use_cross_pool = TRUE,
+  K_prefix       = 80,
+  K_suffix       = 80,
+  use_mass_split = TRUE,
+  sample_limit   = 400,
+
+  respect_locks        = TRUE,
+  lock_threshold       = 0.88,
+  always_offer_isolators = TRUE,
+  top_n                = 20
+)

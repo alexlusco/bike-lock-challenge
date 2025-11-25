@@ -201,19 +201,35 @@ score_all_codes <- function(df,
                             priors, logphi_bundle,
                             w12 = 1.0, w34 = 1.0, w_cross = 0.25,
                             socs_bonus_log = log(1.5),
-                            leak_prior = NULL, beta_leak = 0) {
+                            leak_prior = NULL, beta_leak = 0,
+                            rare_prior = NULL, gamma_rare = 0) {
   pool <- .enumerate_all_codes()
   M <- as.matrix(pool[,1:4])
-  pool$logscore <- apply(M, 1, .blockwise_logscore,
-                         priors = priors,
-                         logphi_bundle = logphi_bundle,
-                         df = df,
-                         w12 = w12, w34 = w34, w_cross = w_cross,
-                         socs_bonus_log = socs_bonus_log)
+  
+  # base structural score
+  base_log <- apply(M, 1, .blockwise_logscore,
+                    priors = priors,
+                    logphi_bundle = logphi_bundle,
+                    df = df,
+                    w12 = w12, w34 = w34, w_cross = w_cross,
+                    socs_bonus_log = socs_bonus_log)
+  pool$logscore <- base_log
+  
+  # optional leak prior
   pool <- .merge_leak_logp(pool, leak_prior, beta_leak = beta_leak)
   pool$logscore <- pool$logscore + pool$logp_leak
+  
+  # optional rare-digit prior
+  if (!is.null(rare_prior) && gamma_rare > 0) {
+    rare_lp <- apply(M, 1, .rare_prior_log,
+                     rare_prior = rare_prior,
+                     gamma_rare = gamma_rare)
+    pool$logscore <- pool$logscore + rare_lp
+  }
+  
   pool
 }
+
 
 apply_feedback <- function(cand_df, guesses = list(), ks = integer()) {
   if (length(guesses) == 0L) return(cand_df)
@@ -359,6 +375,7 @@ propose_next_guess <- function(df,
                                w12 = 1.0, w34 = 1.0, w_cross = 0.25,
                                socs_bonus_log = log(1.5),
                                leak_prior = NULL, beta_leak = 0,
+                               rare_prior = NULL, gamma_rare = 0,
                                use_cross_pool = TRUE, K_prefix = 60, K_suffix = 60,
                                use_mass_split = TRUE,
                                sample_limit = 2500,
@@ -366,16 +383,23 @@ propose_next_guess <- function(df,
                                top_n = 20,
                                respect_locks = TRUE, lock_threshold = 0.90,
                                always_offer_isolators = TRUE) {
-  pri <- build_priors_nb(df, laplace = laplace)
+  pri   <- build_priors_nb(df, laplace = laplace)
   logphi <- build_pairwise_logphi(df, alpha = alpha_pmi, laplace = laplace)
-  scored <- score_all_codes(df, priors = pri, logphi_bundle = logphi,
+  
+  scored <- score_all_codes(df,
+                            priors = pri,
+                            logphi_bundle = logphi,
                             w12 = w12, w34 = w34, w_cross = w_cross,
                             socs_bonus_log = socs_bonus_log,
-                            leak_prior = leak_prior, beta_leak = beta_leak)
+                            leak_prior = leak_prior, beta_leak = beta_leak,
+                            rare_prior = rare_prior, gamma_rare = gamma_rare)
+  
   filt <- apply_feedback(scored, guesses = guesses, ks = ks)
   if (!nrow(filt)) stop("No candidates after filtering. Check guesses/k.")
   filt <- filt[order(-filt$logscore), ]; rownames(filt) <- NULL
+  
   locks <- if (respect_locks) detect_locks(filt, threshold = lock_threshold) else rep(NA_integer_, 4)
+  
   probe_pool <- NULL
   if (use_cross_pool) {
     cross_pool <- .build_cross_pool(filt, K_prefix = K_prefix, K_suffix = K_suffix)
@@ -386,6 +410,7 @@ propose_next_guess <- function(df,
   } else if (any(!is.na(locks))) {
     probe_pool <- restrict_pool_to_locks(.enumerate_all_codes(), locks)
   }
+  
   bs <- best_split_guess(cand_df = filt,
                          probe_pool = probe_pool,
                          sample_limit = sample_limit,
@@ -402,3 +427,36 @@ propose_next_guess <- function(df,
     isolator_tests= isolators
   )
 }
+
+
+# rare-digit prior: pushes each wheel toward digits that appear less often
+# in that wheel position in the jumble data.
+.build_rare_prior <- function(df, laplace = 0.5) {
+  req <- c("digit_1","digit_2","digit_3","digit_4")
+  stopifnot(all(req %in% names(df)))
+  pri <- lapply(req, function(col) {
+    tab  <- table(factor(df[[col]], levels = 0:9))
+    freq <- as.numeric(tab)
+    prop <- (freq + laplace) / sum(freq + laplace)  # proportions per digit
+    names(prop) <- as.character(0:9)
+    prop
+  })
+  names(pri) <- paste0("pos_", 1:4)
+  pri
+}
+
+# log prior contribution for a single 4-digit code under the rare-digit prior.
+# rare_prior is the list produced by .build_rare_prior.
+# gamma_rare controls strength: higher gamma_rare = stronger push to rare digits.
+.rare_prior_log <- function(code_vec, rare_prior, gamma_rare = 1.0) {
+  lp <- 0
+  for (p in 1:4) {
+    pos_name <- paste0("pos_", p)
+    probs    <- rare_prior[[pos_name]]
+    d_chr    <- as.character(code_vec[p])
+    # rare prior: weight ∝ 1 / (freq^gamma); log ⇒ -gamma * log(freq)
+    lp <- lp - gamma_rare * log(probs[d_chr] + 1e-6)
+  }
+  lp
+}
+

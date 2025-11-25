@@ -1,9 +1,10 @@
 # ============================ 01_build_guesses.R ============================
 
-source("code/utils.R")
+#source("code/utils.R")
 
 # ---------------- Load your jumbles ----------------
 df <- real_data # or real_data
+#df <- exp_data |> filter(jumbler == "mp" & week <= 2)
 
 # ---------------- Optional leak prior (build once) ----------------
 # If you want leak available later, build the table now; keep beta=0 until you enable it.
@@ -11,15 +12,55 @@ df <- real_data # or real_data
 leak_prior_table <- build_leak_prior(pin_data, temperature = 600)
 
 # ---------------- Tunable params (edit anytime) -------------------
-params <- list( # MP
+params <- list( # original settings for guesses 1 and 2; before NN
+  laplace        = 1,
+  alpha_pmi      = 0.7, # 0.7
+  w12            = 1.1, # 1.1
+  w34            = 1.2, # 1.2
+  w_cross        = 0.22, # 0.22
+  socs_bonus_log = log(1.5), # 1.5
+  leak_prior     = NULL,   # set to leak_prior_table when you want it ON
+  beta_leak      = 0,      # e.g., 0.15 when enabling
+  #leak_prior     = leak_prior_table,
+  #beta_leak      = 0.12,
+  use_cross_pool = TRUE, K_prefix = 80, K_suffix = 80,
+  use_mass_split = TRUE,
+  sample_limit   = 800, #800
+  respect_locks  = TRUE, lock_threshold = 0.88,
+  always_offer_isolators = TRUE,
+  top_n          = 20
+)
+
+params_NN <- list( # original settings for guesses 1 and 2; before NN
+  laplace        = 1,
+  alpha_pmi      = 0.97, # 0.7
+  w12            = 1.05, # 1.1
+  w34            = 1.21, # 1.2
+  w_cross        = 0.37, # 0.22
+  socs_bonus_log = log(1.97), # 1.5
+  leak_prior     = NULL,   # set to leak_prior_table when you want it ON
+  beta_leak      = 0,      # e.g., 0.15 when enabling
+  #leak_prior     = leak_prior_table,
+  #beta_leak      = 0.12,
+  use_cross_pool = TRUE, K_prefix = 80, K_suffix = 80,
+  use_mass_split = TRUE,
+  sample_limit   = 700, #800
+  respect_locks  = TRUE, lock_threshold = 0.88,
+  always_offer_isolators = TRUE,
+  top_n          = 20
+)
+
+params_leak <- list( # MP
   laplace        = 1,
   alpha_pmi      = 0.7,
   w12            = 1.1,
   w34            = 1.2,
   w_cross        = 0.22,
   socs_bonus_log = log(1.5),
-  leak_prior     = NULL,   # set to leak_prior_table when you want it ON
-  beta_leak      = 0,      # e.g., 0.15 when enabling
+  #leak_prior     = NULL,   # set to leak_prior_table when you want it ON
+  #beta_leak      = 0,      # e.g., 0.15 when enabling
+  leak_prior     = leak_prior_table,
+  beta_leak      = 0.12,
   use_cross_pool = TRUE, K_prefix = 80, K_suffix = 80,
   use_mass_split = TRUE,
   sample_limit   = 800,
@@ -52,17 +93,19 @@ guesses <- list()
 ks      <- integer(0)
 
 # ============================ ROUND 1 — COMPUTE ============================
+df <- real_data |> filter(index <= 39) # keep only first two weeks to replicate first two guesses
+
 set.seed(1)
 res <- do.call(propose_next_guess, c(list(df = df, guesses = guesses, ks = ks, seed = 1), params))
 print_options("Round 1 — COMPUTE", res)
 
 # ===== YOU PLAY Round 1: pick ONE of the following, then set k =====
-#guesses[[1]] <- res$next_guess                         # SHRINK
-guesses[[1]] <- as.integer(res$top[1, 1:4])            # MAP
+guesses[[1]] <- res$next_guess                         # SHRINK
+#guesses[[1]] <- as.integer(res$top[1, 1:4])            # MAP
 # if (!is.null(res$isolator_tests)) guesses[[1]] <- as.integer(res$isolator_tests$testA)  # ISOL A
 # if (!is.null(res$isolator_tests)) guesses[[1]] <- as.integer(res$isolator_tests$testB)  # ISOL B
 # guesses[[1]] <- c(1,2,3,4)                             # CUSTOM
- ks[1]        <- 0                                      # returned k (0..4)
+ ks[1]        <- 1                                   # returned k (0..4)
 
 # ============================ ROUND 2 — COMPUTE ============================
 # Example: enable leak starting here (optional)
@@ -77,43 +120,69 @@ print_options("Round 2 — COMPUTE", res)
 # if (!is.null(res$isolator_tests)) guesses[[2]] <- as.integer(res$isolator_tests$testA)
 # if (!is.null(res$isolator_tests)) guesses[[2]] <- as.integer(res$isolator_tests$testB)
 # guesses[[2]] <- c(1,2,3,4)
- ks[2]        <- 0
+ ks[2]        <- 1
 
 # ============================ ROUND 3 — COMPUTE ============================
+df <- real_data |> filter(index <= 59) # add back in week 3 to compute guess 3
+ 
 set.seed(3)
-res <- do.call(propose_next_guess, c(list(df = df, guesses = guesses, ks = ks, seed = 3), params))
+#res <- do.call(propose_next_guess, c(list(df = df, guesses = guesses, ks = ks, seed = 3), params))
+res <- do.call(propose_next_guess, c(list(df = df, guesses = guesses, ks = ks, seed = 3), params_NN))
+#res <- do.call(propose_next_guess, c(list(df = df, guesses = guesses, ks = ks, seed = 3), params_leak))
 print_options("Round 3 — COMPUTE", res)
 
 # ===== YOU PLAY Round 3 =====
- guesses[[3]] <- res$next_guess
-# guesses[[3]] <- as.integer(res$top[1, 1:4])
+guesses[[3]] <- res$next_guess
+#guesses[[3]] <- as.integer(res$top[1, 1:4])
 # if (!is.null(res$isolator_tests)) guesses[[3]] <- as.integer(res$isolator_tests$testA)
 # if (!is.null(res$isolator_tests)) guesses[[3]] <- as.integer(res$isolator_tests$testB)
 # guesses[[3]] <- c(1,2,3,4)
- ks[3]        <- 1
+ks[3]        <- 0
 
 # ============================ ROUND 4 — COMPUTE ============================
+df <- real_data
+
 set.seed(4)
 res <- do.call(propose_next_guess, c(list(df = df, guesses = guesses, ks = ks, seed = 4), params))
 print_options("Round 4 — COMPUTE", res)
 
 # ===== YOU PLAY Round 4 =====
- guesses[[4]] <- res$next_guess
-# guesses[[4]] <- as.integer(res$top[1, 1:4])
+#guesses[[4]] <- res$next_guess
+guesses[[4]] <- as.integer(res$top[1, 1:4])
 # if (!is.null(res$isolator_tests)) guesses[[4]] <- as.integer(res$isolator_tests$testA)
 # if (!is.null(res$isolator_tests)) guesses[[4]] <- as.integer(res$isolator_tests$testB)
-# guesses[[4]] <- c(1,2,3,4)
+#guesses[[4]] <- c(3,5,5,0)
  ks[4]        <- 0
 
 # ============================ ROUND 5 — COMPUTE ============================
+ # build rare-digit prior from the jumble data available up to now
+rare_prior_tbl <- .build_rare_prior(df)  # df = real_data (or up to week 4)
+
 set.seed(5)
-res <- do.call(propose_next_guess, c(list(df = df, guesses = guesses, ks = ks, seed = 5), params))
-print_options("Round 5 — COMPUTE", res)
+res <- do.call(
+ propose_next_guess,
+ c(
+   list(
+     df      = df,
+     guesses = guesses,
+     ks      = ks,
+     seed    = 5,
+     rare_prior = rare_prior_tbl,
+     gamma_rare = 0.7   # try 0.5–1.0; increase to lean harder into rare digits
+   ),
+   params   # or params / params_leak depending on which base you trust
+ )
+)
+print_options("Round 5 — COMPUTE (rare prior)", res)
+#set.seed(5)
+#res <- do.call(propose_next_guess, c(list(df = df, guesses = guesses, ks = ks, seed = 5), params_NN))
+#print_options("Round 5 — COMPUTE", res)
 
 # ===== YOU PLAY Round 5 =====
 # guesses[[5]] <- res$next_guess
 # guesses[[5]] <- as.integer(res$top[1, 1:4])
 # if (!is.null(res$isolator_tests)) guesses[[5]] <- as.integer(res$isolator_tests$testA)
 # if (!is.null(res$isolator_tests)) guesses[[5]] <- as.integer(res$isolator_tests$testB)
-# guesses[[5]] <- c(1,2,3,4)
-# ks[5]        <- 4
+ guesses[[5]] <- c(9,1,1,0)
+ ks[5]        <- 1
+
